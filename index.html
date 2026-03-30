@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FATHER CHISTY AI V6.0 - ULTRA</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap');
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: #000; overflow: hidden; font-family: 'Rajdhani', sans-serif;
+            user-select: none; -webkit-user-select: none;
+        }
+
+        /* --- CRT Monitor Effect --- */
+        body::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
+
+        /* --- Login UI --- */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; display: flex; align-items: center; justify-content: center; z-index: 10001;
+            flex-direction: column;
+        }
+        .login-card {
+            background: rgba(10, 10, 10, 0.95); padding: 25px; border-radius: 15px;
+            border: 1px solid #00ff41; text-align: center; width: 300px;
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.2); position: relative;
+            backdrop-filter: blur(10px);
+        }
+        .main-logo { 
+            width: 90px; height: 90px; border-radius: 50%; 
+            border: 2px solid #00ff41; margin: 0 auto 15px auto; 
+            background: radial-gradient(circle, #001a00 0%, #000 100%);
+            display: flex; align-items: center; justify-content: center;
+            color: #00ff41; font-family: 'Orbitron'; font-weight: 900;
+            font-size: 24px; text-shadow: 0 0 15px #00ff41;
+            animation: pulseLogo 2s infinite;
+        }
+        @keyframes pulseLogo { 0% {box-shadow: 0 0 10px #00ff41;} 50% {box-shadow: 0 0 25px #00ff41;} 100% {box-shadow: 0 0 10px #00ff41;} }
+
+        h2.login-title {
+            color: #fff; font-family: 'Orbitron'; font-size: 18px; margin: 0 0 20px 0;
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+
+        #passInput { 
+            width: 90%; padding: 15px; background: #0a0a0a; color: #00ff41; 
+            border: 1px solid #333; text-align: center; margin-bottom: 20px; 
+            border-radius: 5px; letter-spacing: 3px; font-family: 'Share Tech Mono'; font-size: 16px;
+            outline: none; transition: 0.3s;
+        }
+        #passInput:focus { border-color: #00ff41; box-shadow: 0 0 15px rgba(0,255,65,0.3); }
+
+        .login-btn { 
+            width: 95%; padding: 14px; background: linear-gradient(45deg, #003300, #001100);
+            color: #00ff41; border: 1px solid #00ff41; font-weight: 900; cursor: pointer; 
+            border-radius: 5px; font-family: 'Orbitron'; font-size: 16px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.4); position: relative; overflow: hidden;
+        }
+        .login-btn:hover { background: #004400; color: #fff; }
+        
+        .error-msg {
+            color: #ff0033; font-size: 12px; margin-top: 10px; height: 15px; font-family: 'Share Tech Mono';
+            text-shadow: 0 0 5px red; opacity: 0; transition: 0.3s;
+        }
+
+        /* --- Main Game Layout --- */
+        #game-frame { display: none; width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
+
+        /* --- AI HUD Interface --- */
+        #protection-box {
+            display: none; position: absolute; top: 50px; right: 10px; width: 280px;
+            background: rgba(0, 5, 0, 0.9); border-radius: 12px; z-index: 9999;
+            border: 1px solid #00ff41; overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            cursor: move; touch-action: none; font-family: 'Share Tech Mono';
+        }
+
+        /* Header */
+        .hud-header {
+            background: #001a00; padding: 8px; border-bottom: 1px solid #00ff41;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .status-dot { width: 8px; height: 8px; background: #00ff41; border-radius: 50%; box-shadow: 0 0 8px #00ff41; animation: blink 1s infinite; }
+        .server-time { color: #00ff41; font-size: 10px; }
+
+        /* Canvas Graph Area */
+        #graph-container {
+            width: 100%; height: 80px; background: #000; position: relative;
+            border-bottom: 1px solid #003300;
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+
+        /* Live Data Grid */
+        .data-grid {
+            display: grid; grid-template-columns: 1fr 1fr; padding: 10px; gap: 5px;
+        }
+        .data-box {
+            background: rgba(0, 50, 0, 0.3); border: 1px solid #004400; padding: 5px;
+            text-align: center; border-radius: 4px;
+        }
+        .data-label { color: #008800; font-size: 9px; display: block; margin-bottom: 2px; }
+        .data-value { color: #fff; font-size: 14px; font-weight: bold; }
+
+        /* Terminal Output */
+        .terminal-window {
+            height: 60px; background: #000; padding: 5px; font-size: 10px; color: #00ff41;
+            overflow-y: hidden; border-top: 1px solid #003300; border-bottom: 1px solid #003300;
+            display: flex; flex-direction: column; justify-content: flex-end;
+        }
+        .log-entry { margin-bottom: 2px; opacity: 0.8; }
+        .log-entry.new { opacity: 1; color: #fff; font-weight: bold; }
+
+        /* Prediction Display */
+        .prediction-section {
+            text-align: center; padding: 15px 10px; background: linear-gradient(180deg, rgba(0,20,0,0) 0%, rgba(0,40,0,0.2) 100%);
+            position: relative;
+        }
+        #pred-text {
+            font-family: 'Orbitron'; font-size: 42px; font-weight: 900;
+            text-shadow: 0 0 20px currentColor; letter-spacing: 2px;
+            margin: 0; line-height: 1;
+        }
+        .confidence-meter {
+            font-size: 10px; color: #00ff41; margin-top: 5px; display: block;
+        }
+        
+        .color-big { color: #ff3333; text-shadow: 0 0 30px #ff0000; } /* Red for Big */
+        .color-small { color: #00ccff; text-shadow: 0 0 30px #00ffff; } /* Blue for Small */
+
+        /* Manual Input / Controls */
+        .control-panel {
+            padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
+        }
+        .ctrl-btn {
+            background: #002200; border: 1px solid #00ff41; color: #00ff41;
+            padding: 8px; font-size: 10px; font-family: 'Orbitron'; cursor: pointer;
+            border-radius: 4px; transition: 0.2s;
+        }
+        .ctrl-btn:active { background: #00ff41; color: #000; }
+        .ctrl-btn.sync { grid-column: span 2; border-color: #ffff00; color: #ffff00; }
+
+        /* Scanning Overlay Animation */
+        #scanner-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: #00ff41; box-shadow: 0 0 10px #00ff41;
+            opacity: 0; pointer-events: none; z-index: 10;
+        }
+        @keyframes scanMove { 0% {top:0; opacity:0;} 20% {opacity:1;} 80% {opacity:1;} 100% {top:100%; opacity:0;} }
+
+        /* Telegram Floating */
+        .telegram-float {
+            position: fixed; bottom: 20px; left: 20px; z-index: 10000;
+            background: #0088cc; padding: 10px 20px; border-radius: 30px;
+            color: #fff; text-decoration: none; font-weight: bold; font-family: 'Rajdhani';
+            box-shadow: 0 0 20px rgba(0,136,204,0.5); display: none; align-items: center; gap: 10px;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <div class="main-logo">MB</div>
+            <h2 class="login-title">FATHER CHISTY<span style="color:#00ff41"> AI</span></h2>
+            
+            <input type="password" id="passInput" placeholder="ENTER ACCESS KEY" onkeypress="handleEnter(event)">
+            <button class="login-btn" onclick="activate()">CONNECT NEURAL NET</button>
+            
+            <div class="error-msg" id="errorMsg">ACCESS DENIED</div>
+            
+            <div style="margin-top: 20px; font-size: 10px; color: #555;">
+                SECURE CONNECTION: TLS 1.3<br>
+                SERVER: ASIA-SG-04
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME IFRAME -->
+    <iframe src="https://dkwin9.com/#/register?invitationCode=12556102944" id="game-frame" allow="autoplay"></iframe>
+
+    <!-- AI HUD -->
+    <div id="protection-box">
+        <div id="scanner-overlay"></div>
+        
+        <div class="hud-header">
+            <div style="display:flex; align-items:center; gap:5px;">
+                <div class="status-dot"></div>
+                <span style="color:#00ff41; font-size:12px; font-weight:bold;">FATHER CHISTY AI V6.0</span>
+            </div>
+            <span class="server-time" id="clock">00:00</span>
+        </div>
+
+        <!-- LIVE GRAPH -->
+        <div id="graph-container">
+            <canvas id="marketCanvas"></canvas>
+        </div>
+
+        <!-- DATA READOUT -->
+        <div class="data-grid">
+            <div class="data-box">
+                <span class="data-label">PERIOD ID</span>
+                <span class="data-value" id="period-disp">--</span>
+            </div>
+            <div class="data-box">
+                <span class="data-label">ALGORITHM</span>
+                <span class="data-value" style="color:#ffff00;">FATHER CHISTY</span>
+            </div>
+            <div class="data-box">
+                <span class="data-label">LAST RESULT</span>
+                <span class="data-value" id="last-res-disp">--</span>
+            </div>
+            <div class="data-box">
+                <span class="data-label">TIMER</span>
+                <span class="data-value" id="timer-disp" style="color:#fff;">30</span>
+            </div>
+        </div>
+
+        <!-- TERMINAL LOG -->
+        <div class="terminal-window" id="terminal">
+            <div class="log-entry">System initialized...</div>
+            <div class="log-entry">Connecting to HK Server...</div>
+            <div class="log-entry">Waiting for sync...</div>
+        </div>
+
+        <!-- PREDICTION OUTPUT -->
+        <div class="prediction-section">
+            <div style="font-size:10px; color:#888; margin-bottom:5px;">NEXT SIGNAL</div>
+            <h1 id="pred-text" style="color:#333;">--</h1>
+            <span class="confidence-meter" id="conf-disp">CONFIDENCE: 0%</span>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="control-panel">
+            <button class="ctrl-btn" onclick="manualInput('BIG')">WAS BIG</button>
+            <button class="ctrl-btn" onclick="manualInput('SMALL')">WAS SMALL</button>
+            <button class="ctrl-btn sync" onclick="autoSync()">🔄 SYNC HISTORY (AUTO)</button>
+        </div>
+    </div>
+
+    <div style="position: fixed; bottom: 20px; left: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; display: none;" id="tg-container">
+        <a href="https://t.me/King_Sami_Official_01" target="_blank" class="telegram-float">
+            <span>🤖</span> MASTER CHISTY
+        </a>
+        <a href="https://t.me/King_Sami_Official_01" target="_blank" class="telegram-float">
+            <span>🛒</span> DEMO ACCOUNT
+        </a>
+        <a href="https://t.me/King_Sami_Official_01" target="_blank" class="telegram-float">
+            <span>📊</span> BDT ACCOUNT
+        </a>
+    </div>
+
+<script>
+    /* --- CONFIG & STATE --- */
+    const CONFIG = {
+        passwords: ["Agentx", "vpn", "masterbot47", "𝗙𝗔𝗧𝗛𝗘𝗥 𝗖𝗛𝗜𝗦𝗧𝗬 𝟯𝟬𝗦 𝗕𝗢𝗧", "AKASHCEO1", "444", "AKASH888", "AKASH777", "AKASHCEO", "AKASHVIP", "AKASH999", "AKASHVIP123"],
+        apiDelay: 2000 // Simulation delay
+    };
+
+    let state = {
+        isLoggedIn: false,
+        history: [], // Stores history objects {type: 'BIG'|'SMALL', number: 5}
+        lastPeriod: "",
+        currentPrediction: null,
+        isProcessing: false
+    };
+
+    let audioCtx;
+    let graphCanvas, graphCtx;
+
+    /* --- INITIALIZATION --- */
+    function handleEnter(e) { if(e.key === "Enter") activate(); }
+
+    function activate() {
+        const input = document.getElementById('passInput').value.trim();
+        const err = document.getElementById('errorMsg');
+
+        if(CONFIG.passwords.includes(input)) {
+            // Success
+            err.style.opacity = 0;
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('game-frame').style.display = 'block';
+            document.getElementById('protection-box').style.display = 'block';
+            document.getElementById('tg-container').style.display = 'flex';
+            
+            initAudio();
+            initGraph();
+            startEngine();
+            log("User authenticated. Access granted.", "success");
+        } else {
+            // Fail
+            err.textContent = "INVALID KEY / ACCESS DENIED";
+            err.style.opacity = 1;
+            playTone(150, 'sawtooth');
+            shakeElement('.login-card');
+        }
+    }
+
+    /* --- AUDIO SYSTEM --- */
+    function initAudio() {
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.1) {
+        if(!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function speak(text) {
+        if('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.rate = 1.2; u.pitch = 0.7;
+            const v = window.speechSynthesis.getVoices().find(v => v.lang.includes('en'));
+            if(v) u.voice = v;
+            window.speechSynthesis.speak(u);
+        }
+    }
+
+    /* --- CANVAS GRAPH VISUALIZER --- */
+    function initGraph() {
+        graphCanvas = document.getElementById('marketCanvas');
+        graphCtx = graphCanvas.getContext('2d');
+        // Resize canvas correctly
+        graphCanvas.width = graphCanvas.offsetWidth;
+        graphCanvas.height = graphCanvas.offsetHeight;
+        
+        let offset = 0;
+        function draw() {
+            graphCtx.clearRect(0,0, graphCanvas.width, graphCanvas.height);
+            graphCtx.beginPath();
+            graphCtx.strokeStyle = '#00ff41';
+            graphCtx.lineWidth = 2;
+            
+            for(let x=0; x < graphCanvas.width; x++) {
+                // Sine wave combined with noise to look like market data
+                const y = graphCanvas.height/2 + 
+                          Math.sin((x + offset) * 0.05) * 20 + 
+                          Math.sin((x + offset * 2) * 0.1) * 10;
+                if(x===0) graphCtx.moveTo(x,y);
+                else graphCtx.lineTo(x,y);
+            }
+            graphCtx.stroke();
+            
+            // Scan line on graph
+            graphCtx.fillStyle = 'rgba(255,255,255,0.5)';
+            graphCtx.fillRect((offset * 5) % graphCanvas.width, 0, 2, graphCanvas.height);
+
+            offset += 2;
+            requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    /* --- LOGIC & PREDICTION ENGINE --- */
+    function startEngine() {
+        setInterval(() => {
+            updateTime();
+            checkPeriodChange();
+        }, 1000);
+    }
+
+    function updateTime() {
+        const now = new Date();
+        const ist = new Date(now.getTime() + (5.5*3600000) + (now.getTimezoneOffset()*60000));
+        
+        // Update Clock
+        const h = String(ist.getHours()).padStart(2,'0');
+        const m = String(ist.getMinutes()).padStart(2,'0');
+        const s = String(ist.getSeconds()).padStart(2,'0');
+        document.getElementById('clock').innerText = `${h}:${m}:${s}`;
+
+        // Game Timer (30s cycle)
+        const totalSeconds = ist.getSeconds();
+        const timeLeft = 30 - (totalSeconds % 30);
+        
+        const timerEl = document.getElementById('timer-disp');
+        timerEl.innerText = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
+        
+        // Color code timer
+        if(timeLeft <= 5) timerEl.style.color = '#ff0000';
+        else timerEl.style.color = '#fff';
+
+        // Generate Period ID
+        const baseDate = ist.getFullYear().toString() + 
+                         String(ist.getMonth()+1).padStart(2,'0') + 
+                         String(ist.getDate()).padStart(2,'0');
+        const periodNum = Math.floor((ist.getHours()*3600 + ist.getMinutes()*60 + ist.getSeconds() - 19800)/30) + 1;
+        const currentP = baseDate + "100005" + String(periodNum).padStart(4,'0');
+        
+        document.getElementById('period-disp').innerText = currentP;
+
+        return { currentP, timeLeft };
+    }
+
+    function checkPeriodChange() {
+        const { currentP, timeLeft } = updateTime();
+        
+        if(currentP !== state.lastPeriod) {
+            state.lastPeriod = currentP;
+            state.isProcessing = false;
+            
+            // Reset UI for new round
+            document.getElementById('pred-text').innerText = "CALC..";
+            document.getElementById('pred-text').style.color = "#333";
+            document.getElementById('conf-disp').innerText = "ANALYZING HASH...";
+            
+            // Trigger prediction logic after 2 seconds
+            setTimeout(() => {
+                runPrediction();
+            }, 2000);
+        }
+    }
+
+    /* --- CORE PREDICTION LOGIC --- */
+    function runPrediction() {
+        const scanner = document.getElementById('scanner-overlay');
+        scanner.style.animation = 'scanMove 1.5s ease-out';
+        scanner.style.opacity = '1';
+        
+        playTone(600, 'square', 0.05);
+        log("Fetching encrypted hash...", "new");
+
+        setTimeout(() => {
+            log("Pattern matching history...", "new");
+            playTone(800, 'sine', 0.05);
+        }, 500);
+
+        setTimeout(() => {
+            // THE ALGORITHM
+            let prediction = "SMALL";
+            let confidence = 85;
+            
+            // Simple Logic based on simulated history
+            const last = state.history[state.history.length - 1];
+            if(last && last.type === 'BIG') {
+                // If last was Big, chance of Small is slightly higher (Martingale inverse)
+                if(Math.random() > 0.4) prediction = "SMALL";
+                else prediction = "BIG";
+            } else if (last && last.type === 'SMALL') {
+                if(Math.random() > 0.4) prediction = "BIG";
+                else prediction = "SMALL";
+            } else {
+                // Random if no history
+                prediction = Math.random() > 0.5 ? "BIG" : "SMALL";
+            }
+
+            // Random confidence boost for show
+            confidence = Math.floor(Math.random() * (99 - 85) + 85);
+
+            // Update UI
+            scanner.style.opacity = '0';
+            const predEl = document.getElementById('pred-text');
+            predEl.innerText = prediction;
+            predEl.className = prediction === 'BIG' ? 'color-big' : 'color-small';
+            
+            document.getElementById('conf-disp').innerText = `CONFIDENCE: ${confidence}% | Z-SCORE: 4.2`;
+            
+            // Audio & Voice
+            playTone(1200, 'triangle', 0.3);
+            speak("Signal confirmed. Go " + prediction);
+            log(`Target Locked: ${prediction} [${confidence}%]`, "new");
+            state.currentPrediction = prediction;
+            state.isProcessing = true;
+
+        }, 1500);
+    }
+
+    /* --- HISTORY & SYNC SYSTEM --- */
+    function manualInput(result) {
+        const now = new Date();
+        const period = state.lastPeriod;
+        // Add to history
+        state.history.push({ period: period, type: result, time: now });
+        if(state.history.length > 10) state.history.shift(); // Keep last 10
+
+        document.getElementById('last-res-disp').innerText = result;
+        document.getElementById('last-res-disp').style.color = result === 'BIG' ? '#ff3333' : '#00ccff';
+        
+        log(`History updated: ${result}`, "new");
+        playTone(400, 'sine', 0.1);
+    }
+
+    function autoSync() {
+        log("Searching visual data feed...", "new");
+        playTone(300, 'square', 0.1);
+        setTimeout(() => {
+            const possible = ["BIG", "SMALL"];
+            const fakeRes = possible[Math.floor(Math.random()*possible.length)];
+            log(`VISUAL SCAN: DETECTED ${fakeRes} (PLEASE VERIFY)`, "new");
+        }, 1000);
+    }
+
+    /* --- UTILS --- */
+    function log(msg, type="") {
+        const term = document.getElementById('terminal');
+        const div = document.createElement('div');
+        div.className = "log-entry " + type;
+        div.innerText = `> ${msg}`;
+        term.appendChild(div);
+        term.scrollTop = term.scrollHeight;
+    }
+
+    function shakeElement(selector) {
+        const el = document.querySelector(selector);
+        el.style.transform = "translate(5px, 0)";
+        setTimeout(() => el.style.transform = "translate(-5px, 0)", 50);
+        setTimeout(() => el.style.transform = "translate(5px, 0)", 100);
+        setTimeout(() => el.style.transform = "translate(0, 0)", 150);
+    }
+
+    /* --- DRAG LOGIC --- */
+    const dragEl = document.getElementById("protection-box");
+    let isDragging = false, startX, startY, initialLeft, initialTop;
+
+    dragEl.addEventListener("mousedown", dragStart);
+    dragEl.addEventListener("touchstart", dragStart, {passive: false});
+
+    function dragStart(e) {
+        if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+        isDragging = true;
+        
+        const clientX = e.clientX || e.touches[0].clientX;
+        const clientY = e.clientY || e.touches[0].clientY;
+        
+        startX = clientX;
+        startY = clientY;
+        
+        const rect = dragEl.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+        
+        dragEl.style.transition = 'none';
+        document.addEventListener("mousemove", dragMove);
+        document.addEventListener("touchmove", dragMove, {passive: false});
+        document.addEventListener("mouseup", dragEnd);
+        document.addEventListener("touchend", dragEnd);
+    }
+
+    function dragMove(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        const clientX = e.clientX || e.touches[0].clientX;
+        const clientY = e.clientY || e.touches[0].clientY;
+        
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        
+        dragEl.style.left = `${initialLeft + dx}px`;
+        dragEl.style.top = `${initialTop + dy}px`;
+        dragEl.style.right = 'auto'; // Disable right anchor
+    }
+
+    function dragEnd() {
+        isDragging = false;
+        dragEl.style.transition = '0.2s';
+        document.removeEventListener("mousemove", dragMove);
+        document.removeEventListener("touchmove", dragMove);
+        document.removeEventListener("mouseup", dragEnd);
+        document.removeEventListener("touchend", dragEnd);
+    }
+</script>
+</body>
+</html>
